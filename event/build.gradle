@@ -1,0 +1,4 @@
+dependencies {
+	compile project(":io.jrevolt.core.util")
+	compile project(":io.jrevolt.core.ctx")
+}
