@@ -2,6 +2,7 @@ rootProject.name = 'io.jrevolt.core'
 
 include 'util'
 include 'msg'
+include 'ctx'
 
 rootProject.children.each { it.name = "$rootProject.name.$it.name" }
 
