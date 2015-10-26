@@ -1,0 +1,69 @@
+buildscript {
+	println("Using profile: ${profile}")
+	File f = new File("${project.projectDir}/gradle-${profile}.properties")
+	if (f.exists()) {
+		println("Loading $f.absoluteFile")
+		Properties props = new Properties()
+		props.load(f.newDataInputStream())
+		for (String s : props.stringPropertyNames()) {
+			setProperty(s, props.getProperty(s))
+		}
+	}
+	ext.cfg = project.properties
+
+	repositories {
+		maven { url "$cfg.repository"; }
+	}
+}
+
+ext {
+	branch = "$git rev-parse --abbrev-ref HEAD".execute().in.text.trim()
+	branchShort = branch.replaceFirst(".*/", "")
+	commit = "$git rev-parse HEAD".execute().in.text.trim()
+	commitShort = commit.substring(0, 7)
+	gitDescribe = "$git describe --match=${basetag} --tags --dirty".execute().in.text.trim()
+	snapshotVersion = "${branchShort}-SNAPSHOT"
+	releaseVersion = "${gitDescribe}"
+}
+
+allprojects {
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'maven'
+	apply plugin: 'distribution'
+
+	project.group = rootProject.name
+	project.version = Boolean.valueOf("${release}") ? "${releaseVersion}" : "${snapshotVersion}"
+
+	[compileJava, compileTestJava]*.options*.compilerArgs = ['-parameters']
+
+	buildDir = "${rootProject.projectDir}/.build/${project.name}"
+	sourceSets {
+		main { [java, resources]*.srcDir 'src/main/java' }
+		test { [java, resources]*.srcDir 'src/test/java' }
+	}
+
+	dependencies {
+		testCompile("junit:junit:4.12")
+	}
+
+	repositories {
+		maven { url "$cfg.repository"; }
+	}
+
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				repository(url: releaseVersion ? "$cfg.releases" : "$cfg.snapshots") {
+					authentication(userName: "$cfg.deploymentUserName", password: "$cfg.deploymentPassword")
+				}
+			}
+		}
+	}
+}
+
+
+
+

@@ -1,0 +1,10 @@
+rootProject.name = 'io.jrevolt.core'
+
+include 'msg'
+
+rootProject.children.each { it.name = "$rootProject.name.$it.name" }
+
+
+
+
+
