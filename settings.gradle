@@ -4,6 +4,7 @@ include 'util'
 include 'msg'
 include 'ctx'
 include 'event'
+include 'log'
 
 rootProject.children.each { it.name = "$rootProject.name.$it.name" }
 
